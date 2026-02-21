@@ -8,8 +8,8 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types import BotCommand
 
 # ================= НАСТРОЙКИ =================
-
-BOT_TOKEN = "8579954557:AAF5fi1qkeAuWZ4OONFgRCmXW9ZmYM6Xbis"
+import os
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 MANAGER_USERNAME = "@kadringeer"
 MANAGER_ID = 8034034918
 
@@ -230,4 +230,5 @@ async def main():
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
+
     asyncio.run(main())
