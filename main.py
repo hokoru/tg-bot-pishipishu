@@ -10,7 +10,7 @@ from aiogram.types import BotCommand
 # ================= НАСТРОЙКИ =================
 import os
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-MANAGER_USERNAME = "@skufchanskiy"
+MANAGER_USERNAME = "@ttrndsgn"
 MANAGER_ID = 8034034918
 
 TARIFFS = {
@@ -236,5 +236,6 @@ async def main():
 if __name__ == "__main__":
 
     asyncio.run(main())
+
 
 
