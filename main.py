@@ -81,6 +81,10 @@ def kb_confirm():
     return kb.as_markup()
 
 # ================= ЛОГИКА =================
+@dp.message()
+async def debug(msg: Message):
+    print(msg.from_user.id)
+
 @dp.message(F.text == "/help")
 async def help_cmd(msg: Message):
     await msg.answer(
@@ -232,4 +236,5 @@ async def main():
 if __name__ == "__main__":
 
     asyncio.run(main())
+
 
