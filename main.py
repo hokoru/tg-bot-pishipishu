@@ -11,7 +11,7 @@ from aiogram.types import BotCommand
 import os
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 MANAGER_USERNAME = "@ttrndsgn"
-MANAGER_ID = 8034034918
+MANAGER_ID = 2091921011
 
 TARIFFS = {
     "rewrite": 20,
@@ -81,10 +81,6 @@ def kb_confirm():
     return kb.as_markup()
 
 # ================= ЛОГИКА =================
-@dp.message()
-async def debug(msg: Message):
-    print(msg.from_user.id)
-
 @dp.message(F.text == "/help")
 async def help_cmd(msg: Message):
     await msg.answer(
@@ -236,6 +232,7 @@ async def main():
 if __name__ == "__main__":
 
     asyncio.run(main())
+
 
 
 
