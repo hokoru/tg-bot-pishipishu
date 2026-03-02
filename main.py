@@ -20,8 +20,8 @@ photo8 = FSInputFile("img/пишу 8.jpg")
 # ================= НАСТРОЙКИ =================
 import os
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-MANAGER_USERNAME = "@ttrndsgn"
-MANAGER_ID = 2091921011
+MANAGER_USERNAME = "@DimentiySobolev"
+MANAGER_ID = 785215907
 
 TARIFFS = {
     "rewrite": 20,
@@ -90,14 +90,11 @@ def kb_confirm():
     return kb.as_markup()
 
 # ================= ЛОГИКА =================
-@dp.message()
-async def debug(msg: Message):
-    print(msg.from_user.id)
 
 @dp.message(F.text == "/help")
 async def help_cmd(msg: Message):
     await msg.answer(
-        "📞 Связь с менеджером: @ttrndsgn"
+        "📞 Связь с менеджером: @DimentiySobolev"
     )
 
 @dp.message(CommandStart())
@@ -368,6 +365,7 @@ async def main():
 if __name__ == "__main__":
 
     asyncio.run(main())
+
 
 
 
