@@ -7,6 +7,7 @@ from aiogram.fsm.state import StatesGroup, State
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types import BotCommand
 from aiogram.types import FSInputFile
+from aiogram.fsm.storage.memory import MemoryStorage
 
 photo1 = FSInputFile("img/1.jpg")
 photo2 = FSInputFile("img/2.jpg")
@@ -41,7 +42,7 @@ class Order(StatesGroup):
 # ================= БОТ =================
 
 bot = Bot(BOT_TOKEN)
-dp = Dispatcher()
+dp = Dispatcher(storage=MemoryStorage())
 
 # ================= КНОПКИ =================
 async def set_commands(bot: Bot):
@@ -240,4 +241,5 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
 
