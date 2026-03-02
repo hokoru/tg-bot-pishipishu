@@ -6,7 +6,6 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types import BotCommand
-from yookassa import Configuration, Payment
 from aiogram.types import FSInputFile
 import uuid
 
@@ -30,11 +29,7 @@ TARIFFS = {
     "summary": 50
 }
 
-SHOP_ID = os.getenv("SHOP_ID")
-SECRET_KEY = os.getenv("SECRET_KEY")
 
-Configuration.account_id = SHOP_ID
-Configuration.secret_key = SECRET_KEY
 # ================= СОСТОЯНИЯ =================
 
 class Order(StatesGroup):
@@ -336,6 +331,7 @@ async def main():
 if __name__ == "__main__":
 
     asyncio.run(main())
+
 
 
 
