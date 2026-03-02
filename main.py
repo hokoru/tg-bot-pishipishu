@@ -160,12 +160,23 @@ async def choose_tariff(call: CallbackQuery, state: FSMContext):
 @dp.callback_query(F.data.startswith("notebook_"))
 async def notebook(call: CallbackQuery, state: FSMContext):
     await state.update_data(notebooks=call.data.endswith("yes"))
-    await call.message.edit_text("Нужно срочно?", reply_markup=kb_yes_no("urgent"))
+
+
+    await call.message.answer_photo(
+        photo=photo5,
+        caption="Нужно срочно?",
+        reply_markup=kb_yes_no("urgent")
+    )
 
 @dp.callback_query(F.data.startswith("urgent_"))
 async def urgent(call: CallbackQuery, state: FSMContext):
     await state.update_data(urgent=call.data.endswith("yes"))
-    await call.message.edit_text("Введите количество страниц:")
+
+    await call.message.answer_photo(
+        photo=photo6,
+        caption="Введите количество страниц:",
+    )
+
     await state.set_state(Order.pages)
 
 @dp.message(Order.pages)
@@ -190,13 +201,14 @@ async def calc(msg: Message, state: FSMContext):
 
     await state.update_data(pages=pages, total=total)
 
-    await msg.answer(
-        f"📊 Ваш заказ:\n\n"
+    await msg.answer_photo(
+        photo=photo7,
+        caption=(f"📊 Ваш заказ:\n\n"
         f"Страниц: {pages}\n"
         f"Тариф: {'Переписать' if data['tariff']=='rewrite' else 'Составить конспект'}\n"
         f"Срочность: {'Да' if data['urgent'] else 'Нет'}\n"
         f"Тетради: {'Да' if data['notebooks'] else 'Нет'}\n\n"
-        f"💰 Итого: {total} ₽",
+        f"💰 Итого: {total} ₽"),
         reply_markup=kb_confirm()
     )
 
@@ -239,10 +251,11 @@ async def materials(msg: Message, state: FSMContext):
         await msg.answer("⚠ Ошибка связи с менеджером. Мы уже решаем проблему.")
         return
 
-    await msg.answer(
-        "✅ Заявка принята!\n\n"
+    await msg.answer_photo(
+        photo=photo8,
+        caption=("✅ Заявка принята!\n\n"
         "Менеджер скоро с вами свяжется.\n"
-        f"Менеджер: {MANAGER_USERNAME}"
+        f"Менеджер: {MANAGER_USERNAME}")
     )
 
     await state.clear()
@@ -256,6 +269,7 @@ async def main():
 if __name__ == "__main__":
 
     asyncio.run(main())
+
 
 
 
