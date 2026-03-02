@@ -177,23 +177,29 @@ async def notebook(call: CallbackQuery, state: FSMContext):
 @dp.callback_query(F.data.startswith("urgent_"))
 async def urgent(call: CallbackQuery, state: FSMContext):
     await state.update_data(urgent=call.data.endswith("yes"))
+    await call.answer()  # Подтверждаем callback
 
     # Отправляем сообщение с просьбой ввести количество страниц
     await call.message.answer_photo(
         photo=photo6,
-        caption="Введите количество страниц:",
+        caption="Введите количество страниц цифрами (например: 5):",
     )
-    await call.answer()
     
     # Устанавливаем состояние
     await state.set_state(Order.pages)
+    print(f"Установлено состояние pages: {await state.get_state()}")  # Для отладки
 
 @dp.message(Order.pages)
 async def pages_input(msg: Message, state: FSMContext):
+    # Проверяем текущее состояние для отладки
+    current_state = await state.get_state()
+    print(f"Состояние при вводе страниц: {current_state}")
+    print(f"Получено сообщение: {msg.text}")
+    
     # Проверяем, что введено число
     if not msg.text or not msg.text.isdigit():
         await msg.answer(
-            "Пожалуйста, введите число страниц цифрами.\n"
+            "❌ Пожалуйста, введите число страниц цифрами.\n"
             "Например: 5, 10, 15"
         )
         return
@@ -205,23 +211,41 @@ async def pages_input(msg: Message, state: FSMContext):
         await msg.answer("❌ Количество страниц должно быть больше 0. Введите правильное число:")
         return
     
+    if pages > 100:
+        await msg.answer("⚠️ Максимальное количество страниц - 100. Введите число от 1 до 100:")
+        return
+    
+    # Получаем все данные из состояния
     data = await state.get_data()
+    print(f"Данные из состояния: {data}")
+    
+    # Проверяем, что все необходимые данные есть
+    if 'tariff' not in data:
+        await msg.answer("❌ Ошибка: не выбран тариф. Начните заново /start")
+        await state.clear()
+        return
     
     # Рассчитываем стоимость
-    base = TARIFFS[data["tariff"]] * pages
-    notebooks = 10 * pages if data["notebooks"] else 0
-    total = base + notebooks
+    try:
+        base = TARIFFS[data["tariff"]] * pages
+        notebooks = 10 * pages if data.get("notebooks", False) else 0
+        total = base + notebooks
 
-    if data["urgent"]:
-        total = int(total * 1.5)
+        if data.get("urgent", False):
+            total = int(total * 1.5)
+    except Exception as e:
+        print(f"Ошибка расчета: {e}")
+        await msg.answer("❌ Ошибка расчета стоимости. Начните заново /start")
+        await state.clear()
+        return
     
     # Сохраняем данные
     await state.update_data(pages=pages, total=total)
     
     # Отправляем результат
     tariff_text = "Переписать" if data['tariff'] == 'rewrite' else "Составить конспект"
-    urgent_text = "Да" if data['urgent'] else "Нет"
-    notebooks_text = "Да" if data['notebooks'] else "Нет"
+    urgent_text = "Да" if data.get('urgent', False) else "Нет"
+    notebooks_text = "Да" if data.get('notebooks', False) else "Нет"
     
     await msg.answer_photo(
         photo=photo7,
@@ -337,6 +361,7 @@ async def main():
 if __name__ == "__main__":
 
     asyncio.run(main())
+
 
 
 
