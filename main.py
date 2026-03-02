@@ -155,28 +155,35 @@ async def go(call: CallbackQuery):
 @dp.callback_query(F.data.in_(["rewrite","summary"]))
 async def choose_tariff(call: CallbackQuery, state: FSMContext):
     await state.update_data(tariff=call.data)
-    await call.message.edit_text("Нужны наши тетради?", reply_markup=kb_yes_no("notebook"))
+    # Просто отправляем новое сообщение
+    await call.message.answer(
+        "Нужны наши тетради?", 
+        reply_markup=kb_yes_no("notebook")
+    )
+    await call.answer()  # Обязательно подтверждаем callback
 
 @dp.callback_query(F.data.startswith("notebook_"))
 async def notebook(call: CallbackQuery, state: FSMContext):
     await state.update_data(notebooks=call.data.endswith("yes"))
-
-
+    
+    # Отправляем новое сообщение с фото
     await call.message.answer_photo(
         photo=photo5,
         caption="Нужно срочно?",
         reply_markup=kb_yes_no("urgent")
     )
+    await call.answer()  # Подтверждаем callback
 
 @dp.callback_query(F.data.startswith("urgent_"))
 async def urgent(call: CallbackQuery, state: FSMContext):
     await state.update_data(urgent=call.data.endswith("yes"))
 
+    # Отправляем новое сообщение
     await call.message.answer_photo(
         photo=photo6,
         caption="Введите количество страниц:",
     )
-
+    await call.answer()  # Подтверждаем callback
     await state.set_state(Order.pages)
 
 @dp.message(Order.pages)
@@ -269,6 +276,7 @@ async def main():
 if __name__ == "__main__":
 
     asyncio.run(main())
+
 
 
 
