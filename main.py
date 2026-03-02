@@ -6,6 +6,18 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types import BotCommand
+from yookassa import Configuration, Payment
+from aiogram.types import FSInputFile
+import uuid
+
+photo1 = FSInputFile("пишу 1.jpg")
+photo2 = FSInputFile("пишу 2.jpg")
+photo3 = FSInputFile("пишу 3.jpg")
+photo4 = FSInputFile("пишу 4.jpg")
+photo5 = FSInputFile("пишу 5.jpg")
+photo6 = FSInputFile("пишу 6.jpg")
+photo7 = FSInputFile("пишу 7.jpg")
+photo8 = FSInputFile("пишу 8.jpg")
 
 # ================= НАСТРОЙКИ =================
 import os
@@ -18,6 +30,11 @@ TARIFFS = {
     "summary": 50
 }
 
+SHOP_ID = os.getenv("SHOP_ID")
+SECRET_KEY = os.getenv("SECRET_KEY")
+
+Configuration.account_id = SHOP_ID
+Configuration.secret_key = SECRET_KEY
 # ================= СОСТОЯНИЯ =================
 
 class Order(StatesGroup):
@@ -80,6 +97,31 @@ def kb_confirm():
     kb.button(text="Изменить заказ", callback_data="edit")
     return kb.as_markup()
 
+def kb_pay(url):
+    kb = InlineKeyboardBuilder()
+    kb.button(text="💳 Оплатить", url=url)
+    kb.button(text="✅ Я оплатил", callback_data="check_payment")
+    return kb.as_markup()
+
+def create_payment(amount, description):
+    payment = Payment.create({
+        "amount": {
+            "value": f"{amount}.00",
+            "currency": "RUB"
+        },
+        "confirmation": {
+            "type": "redirect",
+            "return_url": "https://t.me/"
+        },
+        "capture": True,
+        "description": description,
+        "metadata": {
+            "order_id": str(uuid.uuid4())
+        }
+    })
+    return payment.confirmation.confirmation_url, payment.id
+
+
 # ================= ЛОГИКА =================
 @dp.message(F.text == "/help")
 async def help_cmd(msg: Message):
@@ -90,43 +132,63 @@ async def help_cmd(msg: Message):
 @dp.message(CommandStart())
 async def start(msg: Message, state: FSMContext):
     await state.clear()
-    await msg.answer(
-        "Привет 👋\n\n"
-        "Мы аккуратно переписываем конспекты от руки или составляем их за вас.\n\n"
-        "📌 Важно:\n"
-        "— мы НЕ решаем задачи\n"
-        "— мы НЕ исправляем ошибки\n\n"
-        "👉 Мы можем переписать задачи и формулы, если вы предоставите материал.\n\n"
-        "Давайте начнём 👇",
+    await msg.answer_photo(
+        photo=photo1,
+        caption='''Привет 👋\n\n
+        Мы аккуратно переписываем конспекты от руки или составляем их за вас.\n
+        📌 Важно:
+        — мы НЕ решаем задачи
+        — мы НЕ исправляем ошибки\n
+        👉 Мы можем переписать задачи и формулы, если вы предоставите материал.\n
+        Давайте начнём 👇''',
         reply_markup=kb_user_type()
     )
 
 @dp.callback_query(F.data.in_(["school","student"]))
 async def choose_type(call: CallbackQuery, state: FSMContext):
     await state.update_data(user_type=call.data)
-    await call.message.edit_text("Выберите предмет:", reply_markup=kb_subjects(call.data))
+
+    await call.message.answer_photo(
+        photo=photo2,
+        caption="Выберите предмет:",
+        reply_markup=kb_subjects(call.data)
+    )
 
 @dp.callback_query(F.data.startswith("sub_"))
 async def choose_subject(call: CallbackQuery, state: FSMContext):
     await state.update_data(subject=call.data[4:])
-    await call.message.edit_text(
-        "❗ Важно:\n\n"
-        "Мы НЕ выполняем:\n"
-        "— решение задач\n"
-        "— примеры и уравнения\n"
-        "— расчёты\n"
-        "— исправление текста\n\n"
-        "✔ Но можем переписать материал.\n\n"
-        "Мы выполняем:\n"
-        "— переписывание\n"
-        "— оформление конспектов\n"
-        "— составление конспектов",
+
+    await call.message.delete()
+
+
+    await call.message.answer_photo(
+        photo=photo3,
+        caption=(
+            "❗ Важно:\n\n"
+            "Мы НЕ выполняем:\n"
+            "— решение задач\n"
+            "— примеры и уравнения\n"
+            "— расчёты\n"
+            "— исправление текста\n\n"
+            "✔ Но можем переписать материал.\n\n"
+            "Мы выполняем:\n"
+            "— переписывание\n"
+            "— оформление конспектов\n"
+            "— составление конспектов"
+        ),
         reply_markup=kb_continue()
     )
 
 @dp.callback_query(F.data == "go")
 async def go(call: CallbackQuery):
-    await call.message.edit_text("Что нужно сделать?", reply_markup=kb_tariff())
+    await call.message.delete()
+
+
+    await call.message.answer_photo(
+        photo=photo3,
+        caption="Что нужно сделать?",
+        reply_markup=kb_tariff()
+    )
 
 @dp.callback_query(F.data.in_(["rewrite","summary"]))
 async def choose_tariff(call: CallbackQuery, state: FSMContext):
@@ -136,12 +198,28 @@ async def choose_tariff(call: CallbackQuery, state: FSMContext):
 @dp.callback_query(F.data.startswith("notebook_"))
 async def notebook(call: CallbackQuery, state: FSMContext):
     await state.update_data(notebooks=call.data.endswith("yes"))
-    await call.message.edit_text("Нужно срочно?", reply_markup=kb_yes_no("urgent"))
+
+    await call.message.delete()
+
+
+    await call.message.answer_photo(
+        photo=photo5,
+        caption="Нужно срочно?",
+        reply_markup=kb_yes_no("urgent")
+    )
 
 @dp.callback_query(F.data.startswith("urgent_"))
 async def urgent(call: CallbackQuery, state: FSMContext):
     await state.update_data(urgent=call.data.endswith("yes"))
-    await call.message.edit_text("Введите количество страниц:")
+
+    await call.message.delete()
+
+
+    await call.message.answer_photo(
+        photo=photo6,
+        caption="Введите количество страниц:",
+    )
+
     await state.set_state(Order.pages)
 
 @dp.message(Order.pages)
@@ -166,13 +244,14 @@ async def calc(msg: Message, state: FSMContext):
 
     await state.update_data(pages=pages, total=total)
 
-    await msg.answer(
-        f"📊 Ваш заказ:\n\n"
+    await msg.answer_photo(
+        caption=("📊 Ваш заказ:\n\n"
         f"Страниц: {pages}\n"
         f"Тариф: {'Переписать' if data['tariff']=='rewrite' else 'Составить конспект'}\n"
         f"Срочность: {'Да' if data['urgent'] else 'Нет'}\n"
         f"Тетради: {'Да' if data['notebooks'] else 'Нет'}\n\n"
-        f"💰 Итого: {total} ₽",
+        f"💰 Итого: {total} ₽"),
+        photo=photo7,
         reply_markup=kb_confirm()
     )
 
@@ -182,8 +261,32 @@ async def edit(call: CallbackQuery):
 
 @dp.callback_query(F.data == "confirm")
 async def confirm(call: CallbackQuery, state: FSMContext):
-    await call.message.edit_text("Отлично 👍\n\nОтправьте материал:")
-    await state.set_state(Order.materials)
+    data = await state.get_data()
+
+    pay_url, pay_id = create_payment(
+        data["total"],
+        f"Заказ ПишиПишу — {call.from_user.id}"
+    )
+
+    await state.update_data(payment_id=pay_id)
+
+    await call.message.edit_text(
+        f"💰 К оплате: {data['total']} ₽\n\n"
+        "Нажмите кнопку ниже для оплаты 👇",
+        reply_markup=kb_pay(pay_url)
+    )
+
+@dp.callback_query(F.data == "check_payment")
+async def check_payment(call: CallbackQuery, state: FSMContext):
+    data = await state.get_data()
+
+    payment = Payment.find_one(data["payment_id"])
+
+    if payment.status == "succeeded":
+        await call.message.edit_text("✅ Оплата получена!\n\nОтправьте материал:")
+        await state.set_state(Order.materials)
+    else:
+        await call.answer("❌ Платёж не найден. Попробуйте позже.", show_alert=True)
 
 @dp.message(Order.materials)
 async def materials(msg: Message, state: FSMContext):
@@ -215,10 +318,11 @@ async def materials(msg: Message, state: FSMContext):
         await msg.answer("⚠ Ошибка связи с менеджером. Мы уже решаем проблему.")
         return
 
-    await msg.answer(
-        "✅ Заявка принята!\n\n"
+    await msg.answer_photo(
+        caption=("✅ Заявка принята!\n\n"
         "Менеджер скоро с вами свяжется.\n"
-        f"Менеджер: {MANAGER_USERNAME}"
+        f"Менеджер: {MANAGER_USERNAME}"),
+        photo=photo8
     )
 
     await state.clear()
@@ -232,7 +336,6 @@ async def main():
 if __name__ == "__main__":
 
     asyncio.run(main())
-
 
 
 
