@@ -177,8 +177,10 @@ async def notebook(call: CallbackQuery, state: FSMContext):
 @dp.callback_query(F.data.startswith("urgent_"))
 async def urgent(call: CallbackQuery, state: FSMContext):
     await state.update_data(urgent=call.data.endswith("yes"))
-    await call.answer()  # Подтверждаем callback
-
+    
+    # ВАЖНО: подтверждаем callback
+    await call.answer()
+    
     # Отправляем сообщение с просьбой ввести количество страниц
     await call.message.answer_photo(
         photo=photo6,
@@ -189,7 +191,8 @@ async def urgent(call: CallbackQuery, state: FSMContext):
     await state.set_state(Order.pages)
     print(f"Установлено состояние pages: {await state.get_state()}")  # Для отладки
 
-@dp.message(Order.pages)
+# ИСПРАВЛЕНО: добавляем фильтр на текстовые сообщения в состоянии Order.pages
+@dp.message(Order.pages, F.text)
 async def pages_input(msg: Message, state: FSMContext):
     # Проверяем текущее состояние для отладки
     current_state = await state.get_state()
@@ -206,7 +209,7 @@ async def pages_input(msg: Message, state: FSMContext):
     
     pages = int(msg.text)
     
-    # Проверяем, что число положительное
+    # Проверяем, что число положительное и не слишком большое
     if pages <= 0:
         await msg.answer("❌ Количество страниц должно быть больше 0. Введите правильное число:")
         return
@@ -361,6 +364,7 @@ async def main():
 if __name__ == "__main__":
 
     asyncio.run(main())
+
 
 
 
