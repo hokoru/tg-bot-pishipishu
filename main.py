@@ -243,51 +243,85 @@ async def pages_input(msg: Message, state: FSMContext):
     
     # Состояние автоматически сохраняется, не сбрасываем его пока
 @dp.callback_query(F.data == "edit")
-async def edit(call: CallbackQuery):
-    await call.message.edit_text("Что нужно сделать?", reply_markup=kb_tariff())
+async def edit(call: CallbackQuery, state: FSMContext):
+    await call.answer()  # Подтверждаем callback
+    # Возвращаемся к выбору тарифа
+    await call.message.answer(
+        "Что нужно сделать?",
+        reply_markup=kb_tariff()
+    )
 
 @dp.callback_query(F.data == "confirm")
 async def confirm(call: CallbackQuery, state: FSMContext):
-    await call.message.edit_text("Отлично 👍\n\nОтправьте материал:")
+    await call.answer()  # Подтверждаем callback
+    await call.message.edit_text("Отлично 👍\n\nОтправьте материал (фото, файл или текст):")
     await state.set_state(Order.materials)
 
 @dp.message(Order.materials)
 async def materials(msg: Message, state: FSMContext):
+    # Получаем данные заказа
     data = await state.get_data()
-
+    
+    # Проверяем, что все необходимые данные есть
+    if not data.get('user_type') or not data.get('subject') or not data.get('pages'):
+        await msg.answer("❌ Ошибка: данные заказа повреждены. Начните заново /start")
+        await state.clear()
+        return
+    
+    # Формируем текст для менеджера
     user_type = "Школьник" if data["user_type"] == "school" else "Студент"
     tariff = "Переписать" if data["tariff"] == "rewrite" else "Составить конспект"
-    notebooks = "Да" if data["notebooks"] else "Нет"
-    urgent = "Да" if data["urgent"] else "Нет"
-
+    notebooks = "Да" if data.get("notebooks", False) else "Нет"
+    urgent = "Да" if data.get("urgent", False) else "Нет"
+    
+    # Информация о клиенте
+    client_info = f"@{msg.from_user.username}" if msg.from_user.username else "Нет username"
+    
     text = (
         f"📥 НОВЫЙ ЗАКАЗ\n\n"
-        f"👤 Клиент: @{msg.from_user.username}\n"
-        f"🆔 ID: {msg.from_user.id}\n\n"
+        f"👤 Клиент: {client_info}\n"
+        f"🆔 ID: {msg.from_user.id}\n"
+        f"📱 Имя: {msg.from_user.full_name}\n\n"
         f"🎓 Тип: {user_type}\n"
-        f"📚 Предмет: {data['subject']}\n\n"
+        f"📚 Предмет: {data.get('subject', 'Не указан')}\n\n"
         f"📝 Тариф: {tariff}\n"
         f"📓 Наши тетради: {notebooks}\n"
         f"⏱ Срочно: {urgent}\n\n"
-        f"📄 Страниц: {data['pages']}\n"
-        f"💰 Сумма: {data['total']} ₽"
+        f"📄 Страниц: {data.get('pages', 0)}\n"
+        f"💰 Сумма: {data.get('total', 0)} ₽\n\n"
+        f"📎 Материалы клиента:"
     )
 
     try:
+        # Отправляем информацию менеджеру
         await bot.send_message(MANAGER_ID, text)
+        
+        # Пересылаем сообщение с материалами
         await msg.forward(MANAGER_ID)
+        
+        # Если это фото или документ, можно отправить отдельно для лучшего качества
+        if msg.photo:
+            await bot.send_message(MANAGER_ID, "📸 Фото материалов:")
+        elif msg.document:
+            await bot.send_message(MANAGER_ID, "📎 Документ с материалами:")
+            
     except Exception as e:
         print("Ошибка отправки менеджеру:", e)
-        await msg.answer("⚠ Ошибка связи с менеджером. Мы уже решаем проблему.")
+        await msg.answer("⚠ Ошибка связи с менеджером. Мы уже решаем проблему.\nПожалуйста, попробуйте позже или свяжитесь напрямую: @ttrndsgn")
         return
 
+    # Подтверждение клиенту
     await msg.answer_photo(
         photo=photo8,
-        caption=("✅ Заявка принята!\n\n"
-        "Менеджер скоро с вами свяжется.\n"
-        f"Менеджер: {MANAGER_USERNAME}")
+        caption=(
+            "✅ Заявка принята!\n\n"
+            "Менеджер скоро с вами свяжется.\n"
+            f"Менеджер: {MANAGER_USERNAME}\n\n"
+            "Пожалуйста, ожидайте ответа в ближайшее время."
+        )
     )
 
+    # Очищаем состояние
     await state.clear()
 
 # ================= ЗАПУСК =================
@@ -299,6 +333,7 @@ async def main():
 if __name__ == "__main__":
 
     asyncio.run(main())
+
 
 
 
