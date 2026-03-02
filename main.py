@@ -145,7 +145,12 @@ async def choose_subject(call: CallbackQuery, state: FSMContext):
 
 @dp.callback_query(F.data == "go")
 async def go(call: CallbackQuery):
-    await call.message.edit_text("Что нужно сделать?", reply_markup=kb_tariff())
+
+    await call.message.answer_photo(
+        photo=photo4,
+        caption="Что нужно сделать?",
+        reply_markup=kb_tariff()
+    )
 
 @dp.callback_query(F.data.in_(["rewrite","summary"]))
 async def choose_tariff(call: CallbackQuery, state: FSMContext):
@@ -251,6 +256,7 @@ async def main():
 if __name__ == "__main__":
 
     asyncio.run(main())
+
 
 
 
