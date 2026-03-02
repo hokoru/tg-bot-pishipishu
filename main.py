@@ -113,23 +113,38 @@ async def start(msg: Message, state: FSMContext):
 @dp.callback_query(F.data.in_(["school","student"]))
 async def choose_type(call: CallbackQuery, state: FSMContext):
     await state.update_data(user_type=call.data)
-    await call.message.edit_text("Выберите предмет:", reply_markup=kb_subjects(call.data))
+
+    await call.message.delete()
+
+
+    await call.message.answer_photo(
+        photo=photo1,
+        caption="Выберите предмет:",
+        reply_markup=kb_subjects(call.data)
+    )
 
 @dp.callback_query(F.data.startswith("sub_"))
 async def choose_subject(call: CallbackQuery, state: FSMContext):
     await state.update_data(subject=call.data[4:])
-    await call.message.edit_text(
-        "❗ Важно:\n\n"
-        "Мы НЕ выполняем:\n"
-        "— решение задач\n"
-        "— примеры и уравнения\n"
-        "— расчёты\n"
-        "— исправление текста\n\n"
-        "✔ Но можем переписать материал.\n\n"
-        "Мы выполняем:\n"
-        "— переписывание\n"
-        "— оформление конспектов\n"
-        "— составление конспектов",
+
+    await call.message.delete()
+
+
+    await call.message.answer_photo(
+        photo=photo2,
+        caption=(
+            "❗ Важно:\n\n"
+            "Мы НЕ выполняем:\n"
+            "— решение задач\n"
+            "— примеры и уравнения\n"
+            "— расчёты\n"
+            "— исправление текста\n\n"
+            "✔ Но можем переписать материал.\n\n"
+            "Мы выполняем:\n"
+            "— переписывание\n"
+            "— оформление конспектов\n"
+            "— составление конспектов"
+        ),
         reply_markup=kb_continue()
     )
 
@@ -241,3 +256,4 @@ async def main():
 if __name__ == "__main__":
 
     asyncio.run(main())
+
