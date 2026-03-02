@@ -205,11 +205,6 @@ async def pages_input(msg: Message, state: FSMContext):
         await msg.answer("❌ Количество страниц должно быть больше 0. Введите правильное число:")
         return
     
-    if pages > 100:
-        await msg.answer("⚠️ Вы уверены?\nВведите другое число или подтвердите текущее:")
-        # Можно добавить логику для подтверждения большого заказа
-        return
-    
     data = await state.get_data()
     
     # Рассчитываем стоимость
@@ -242,20 +237,29 @@ async def pages_input(msg: Message, state: FSMContext):
     )
     
     # Состояние автоматически сохраняется, не сбрасываем его пока
-@dp.callback_query(F.data == "edit")
-async def edit(call: CallbackQuery, state: FSMContext):
+@dp.callback_query(F.data == "confirm")
+async def confirm(call: CallbackQuery, state: FSMContext):
     await call.answer()  # Подтверждаем callback
-    # Возвращаемся к выбору тарифа
+    
+    # Отправляем НОВОЕ сообщение, не удаляя старое
+    await call.message.answer(
+        "✅ Отлично! Теперь отправьте материал:\n\n"
+        "📎 Вы можете отправить:\n"
+        "• Фото конспектов\n"
+        "• Документ (PDF, Word)\n"
+        "• Текстовое описание\n\n"
+        "✍️ Опишите, что нужно сделать:"
+    )
+    await state.set_state(Order.materials)
+
+@dp.callback_query(F.data == "edit")
+async def edit_order(call: CallbackQuery, state: FSMContext):
+    await call.answer()
+    # Отправляем НОВОЕ сообщение, не удаляя старое
     await call.message.answer(
         "Что нужно сделать?",
         reply_markup=kb_tariff()
     )
-
-@dp.callback_query(F.data == "confirm")
-async def confirm(call: CallbackQuery, state: FSMContext):
-    await call.answer()  # Подтверждаем callback
-    await call.message.edit_text("Отлично 👍\n\nОтправьте материал (фото, файл или текст):")
-    await state.set_state(Order.materials)
 
 @dp.message(Order.materials)
 async def materials(msg: Message, state: FSMContext):
@@ -333,6 +337,7 @@ async def main():
 if __name__ == "__main__":
 
     asyncio.run(main())
+
 
 
 
