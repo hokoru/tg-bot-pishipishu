@@ -178,47 +178,70 @@ async def notebook(call: CallbackQuery, state: FSMContext):
 async def urgent(call: CallbackQuery, state: FSMContext):
     await state.update_data(urgent=call.data.endswith("yes"))
 
-    # Отправляем новое сообщение
+    # Отправляем сообщение с просьбой ввести количество страниц
     await call.message.answer_photo(
         photo=photo6,
         caption="Введите количество страниц:",
     )
-    await call.answer()  # Подтверждаем callback
+    await call.answer()
+    
+    # Устанавливаем состояние
     await state.set_state(Order.pages)
 
 @dp.message(Order.pages)
-async def calc(msg: Message, state: FSMContext):
-    if msg.text.lower() == "оператор":
-        await msg.answer(f"Связь с менеджером: {MANAGER_USERNAME}")
+async def pages_input(msg: Message, state: FSMContext):
+    # Проверяем, что введено число
+    if not msg.text or not msg.text.isdigit():
+        await msg.answer(
+            "Пожалуйста, введите число страниц цифрами.\n"
+            "Например: 5, 10, 15"
+        )
         return
-
-    if not msg.text.isdigit():
-        await msg.answer("Введите число страниц:")
-        return
-
+    
     pages = int(msg.text)
+    
+    # Проверяем, что число положительное
+    if pages <= 0:
+        await msg.answer("❌ Количество страниц должно быть больше 0. Введите правильное число:")
+        return
+    
+    if pages > 100:
+        await msg.answer("⚠️ Вы уверены?\nВведите другое число или подтвердите текущее:")
+        # Можно добавить логику для подтверждения большого заказа
+        return
+    
     data = await state.get_data()
-
+    
+    # Рассчитываем стоимость
     base = TARIFFS[data["tariff"]] * pages
     notebooks = 10 * pages if data["notebooks"] else 0
     total = base + notebooks
 
     if data["urgent"]:
         total = int(total * 1.5)
-
+    
+    # Сохраняем данные
     await state.update_data(pages=pages, total=total)
-
+    
+    # Отправляем результат
+    tariff_text = "Переписать" if data['tariff'] == 'rewrite' else "Составить конспект"
+    urgent_text = "Да" if data['urgent'] else "Нет"
+    notebooks_text = "Да" if data['notebooks'] else "Нет"
+    
     await msg.answer_photo(
         photo=photo7,
-        caption=(f"📊 Ваш заказ:\n\n"
-        f"Страниц: {pages}\n"
-        f"Тариф: {'Переписать' if data['tariff']=='rewrite' else 'Составить конспект'}\n"
-        f"Срочность: {'Да' if data['urgent'] else 'Нет'}\n"
-        f"Тетради: {'Да' if data['notebooks'] else 'Нет'}\n\n"
-        f"💰 Итого: {total} ₽"),
+        caption=(
+            f"📊 Ваш заказ:\n\n"
+            f"📄 Страниц: {pages}\n"
+            f"📝 Тариф: {tariff_text}\n"
+            f"⏱ Срочно: {urgent_text}\n"
+            f"📓 Наши тетради: {notebooks_text}\n\n"
+            f"💰 Итого: {total} ₽"
+        ),
         reply_markup=kb_confirm()
     )
-
+    
+    # Состояние автоматически сохраняется, не сбрасываем его пока
 @dp.callback_query(F.data == "edit")
 async def edit(call: CallbackQuery):
     await call.message.edit_text("Что нужно сделать?", reply_markup=kb_tariff())
@@ -276,6 +299,7 @@ async def main():
 if __name__ == "__main__":
 
     asyncio.run(main())
+
 
 
 
