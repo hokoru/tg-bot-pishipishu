@@ -99,14 +99,15 @@ async def help_cmd(msg: Message):
 @dp.message(CommandStart())
 async def start(msg: Message, state: FSMContext):
     await state.clear()
-    await msg.answer(
-        "Привет 👋\n\n"
+    await msg.answer_photo(
+        photo=photo1,
+        caption=("Привет 👋\n\n"
         "Мы аккуратно переписываем конспекты от руки или составляем их за вас.\n\n"
         "📌 Важно:\n"
         "— мы НЕ решаем задачи\n"
         "— мы НЕ исправляем ошибки\n\n"
         "👉 Мы можем переписать задачи и формулы, если вы предоставите материал.\n\n"
-        "Давайте начнём 👇",
+        "Давайте начнём 👇"),
         reply_markup=kb_user_type()
     )
 
@@ -115,7 +116,7 @@ async def choose_type(call: CallbackQuery, state: FSMContext):
     await state.update_data(user_type=call.data)
 
     await call.message.answer_photo(
-        photo=photo1,
+        photo=photo2,
         caption="Выберите предмет:",
         reply_markup=kb_subjects(call.data)
     )
@@ -125,7 +126,7 @@ async def choose_subject(call: CallbackQuery, state: FSMContext):
     await state.update_data(subject=call.data[4:])
 
     await call.message.answer_photo(
-        photo=photo2,
+        photo=photo3,
         caption=(
             "❗ Важно:\n\n"
             "Мы НЕ выполняем:\n"
@@ -250,5 +251,6 @@ async def main():
 if __name__ == "__main__":
 
     asyncio.run(main())
+
 
 
