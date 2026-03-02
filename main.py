@@ -121,21 +121,23 @@ def create_payment(amount, description):
 @dp.message(F.text == "/help")
 async def help_cmd(msg: Message):
     await msg.answer(
-        "📞 Связь с менеджером: @kadringeer"
+        "📞 Связь с менеджером: @ttrndsgn"
     )
 
-@dp.message(CommandStart())
+@dp.message(F.text.in_({"/start", "start"}))
 async def start(msg: Message, state: FSMContext):
     await state.clear()
     await msg.answer_photo(
         photo=photo1,
-        caption='''Привет 👋\n\n
-        Мы аккуратно переписываем конспекты от руки или составляем их за вас.\n
-        📌 Важно:
-        — мы НЕ решаем задачи
-        — мы НЕ исправляем ошибки\n
-        👉 Мы можем переписать задачи и формулы, если вы предоставите материал.\n
-        Давайте начнём 👇''',
+        caption=(
+            "Привет 👋\n\n"
+            "Мы аккуратно переписываем конспекты от руки или составляем их за вас.\n\n"
+            "📌 Важно:\n"
+            "— мы НЕ решаем задачи\n"
+            "— мы НЕ исправляем ошибки\n\n"
+            "👉 Мы можем переписать задачи и формулы, если вы предоставите материал.\n\n"
+            "Давайте начнём 👇"
+        ),
         reply_markup=kb_user_type()
     )
 
@@ -331,6 +333,7 @@ async def main():
 if __name__ == "__main__":
 
     asyncio.run(main())
+
 
 
 
