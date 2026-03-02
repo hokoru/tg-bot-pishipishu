@@ -8,14 +8,14 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types import BotCommand
 from aiogram.types import FSInputFile
 
-photo1 = FSInputFile("пишу 1.jpg")
-photo2 = FSInputFile("пишу 2.jpg")
-photo3 = FSInputFile("пишу 3.jpg")
-photo4 = FSInputFile("пишу 4.jpg")
-photo5 = FSInputFile("пишу 5.jpg")
-photo6 = FSInputFile("пишу 6.jpg")
-photo7 = FSInputFile("пишу 7.jpg")
-photo8 = FSInputFile("пишу 8.jpg")
+photo1 = FSInputFile("img/пишу 1.jpg")
+photo2 = FSInputFile("img/пишу 2.jpg")
+photo3 = FSInputFile("img/пишу 3.jpg")
+photo4 = FSInputFile("img/пишу 4.jpg")
+photo5 = FSInputFile("img/пишу 5.jpg")
+photo6 = FSInputFile("img/пишу 6.jpg")
+photo7 = FSInputFile("img/пишу 7.jpg")
+photo8 = FSInputFile("img/пишу 8.jpg")
 
 # ================= НАСТРОЙКИ =================
 import os
@@ -114,9 +114,6 @@ async def start(msg: Message, state: FSMContext):
 async def choose_type(call: CallbackQuery, state: FSMContext):
     await state.update_data(user_type=call.data)
 
-    await call.message.delete()
-
-
     await call.message.answer_photo(
         photo=photo1,
         caption="Выберите предмет:",
@@ -126,9 +123,6 @@ async def choose_type(call: CallbackQuery, state: FSMContext):
 @dp.callback_query(F.data.startswith("sub_"))
 async def choose_subject(call: CallbackQuery, state: FSMContext):
     await state.update_data(subject=call.data[4:])
-
-    await call.message.delete()
-
 
     await call.message.answer_photo(
         photo=photo2,
@@ -256,4 +250,5 @@ async def main():
 if __name__ == "__main__":
 
     asyncio.run(main())
+
 
