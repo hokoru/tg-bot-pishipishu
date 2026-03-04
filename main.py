@@ -87,9 +87,14 @@ def kb_yes_no(prefix):
 
 def kb_confirm():
     kb = InlineKeyboardBuilder()
+    kb.button(text="✅ Оформить заказ", callback_data="confirm")
+    return kb.as_markup()
+
+'''def kb_confirm():
+    kb = InlineKeyboardBuilder()
     kb.button(text="Оформить", callback_data="confirm")
     kb.button(text="Изменить заказ", callback_data="edit")
-    return kb.as_markup()
+    return kb.as_markup()'''
 
 # ================= ЛОГИКА =================
 
@@ -241,6 +246,7 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
 
 
 
