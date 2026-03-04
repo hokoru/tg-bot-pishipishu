@@ -40,7 +40,7 @@ class Order(StatesGroup):
     materials = State()
 
 # ================= БОТ =================
-
+print("БОТ ЗАПУЩЕН")
 bot = Bot(BOT_TOKEN)
 dp = Dispatcher(storage=MemoryStorage())
 
@@ -162,6 +162,7 @@ async def go(call: CallbackQuery):
 
 @dp.callback_query(F.data.in_(["rewrite","summary"]))
 async def choose_tariff(call: CallbackQuery, state: FSMContext):
+    print("Тариф выбран:", call.data)
     await call.answer()
     await state.update_data(tariff=call.data)
     await call.message.answer("Нужны наши тетради?", reply_markup=kb_yes_no("notebook"))
@@ -246,6 +247,7 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
 
 
 
