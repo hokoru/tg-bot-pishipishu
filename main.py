@@ -213,10 +213,10 @@ async def confirm(call: CallbackQuery, state: FSMContext):
     await call.message.answer("Отправьте материал:")
     await state.set_state(Order.materials)
 
-@dp.callback_query(F.data == "edit")
+'''@dp.callback_query(F.data == "edit")
 async def edit_order(call: CallbackQuery, state: FSMContext):
     await call.answer()
-    await call.message.answer("Что нужно сделать?", reply_markup=kb_tariff())
+    await call.message.answer("Что нужно сделать?", reply_markup=kb_tariff())'''
 
 @dp.message(Order.materials)
 async def materials(msg: Message, state: FSMContext):
@@ -241,5 +241,6 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
 
 
