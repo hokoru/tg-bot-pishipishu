@@ -25,8 +25,8 @@ MANAGER_USERNAME = "@DimentiySobolev"
 MANAGER_ID = 785215907
 
 TARIFFS = {
-    "rewrite": 20,
-    "summary": 50
+    "rewrite": 80,
+    "summary": 130
 }
 
 
@@ -74,8 +74,8 @@ def kb_continue():
 
 def kb_tariff():
     kb = InlineKeyboardBuilder()
-    kb.button(text="✍ Переписать", callback_data="rewrite")
-    kb.button(text="📖 Составить конспект", callback_data="summary")
+    kb.button(text="✍ Переписать — 80₽ / стр", callback_data="rewrite")
+    kb.button(text="📖 Составить конспект — 130₽ / стр", callback_data="summary")
     kb.adjust(1)
     return kb.as_markup()
 
@@ -165,7 +165,10 @@ async def choose_tariff(call: CallbackQuery, state: FSMContext):
     print("Тариф выбран:", call.data)
     await call.answer()
     await state.update_data(tariff=call.data)
-    await call.message.answer("Нужны наши тетради?", reply_markup=kb_yes_no("notebook"))
+    await call.message.answer(
+    "Нужны наши тетради? (+30₽ за тетрадь 18 листов)",
+    reply_markup=kb_yes_no("notebook")
+)
 
 @dp.callback_query(F.data.startswith("notebook_"))
 async def notebook(call: CallbackQuery, state: FSMContext):
@@ -197,17 +200,31 @@ async def pages_input(msg: Message, state: FSMContext):
     data = await state.get_data()
 
     base = TARIFFS[data["tariff"]] * pages
-    notebooks = 10 * pages if data.get("notebooks") else 0
+
+    notebooks = 0
+    notebook_count = 0
+    
+    if data.get("notebooks"):
+        import math
+        notebook_count = math.ceil(pages / 18)
+        notebooks = notebook_count * 30
+
     total = base + notebooks
     if data.get("urgent"):
         total = int(total * 1.5)
 
     await state.update_data(pages=pages, total=total)
 
+    notebook_text = ""
+    
+    if notebook_count > 0:
+        notebook_text = f"\n📓 Тетрадей: {notebook_count} (+{notebooks} ₽)"
+    
     await msg.answer_photo(
         photo=photo7,
         caption=(
-            f"📄 Страниц: {pages}\n"
+            f"📄 Страниц: {pages}"
+            f"{notebook_text}\n"
             f"💰 Итого: {total} ₽"
         ),
         reply_markup=kb_confirm()
@@ -247,6 +264,7 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
 
 
 
