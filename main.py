@@ -45,6 +45,10 @@ bot = Bot(BOT_TOKEN)
 dp = Dispatcher(storage=MemoryStorage())
 
 # ================= КНОПКИ =================
+@dp.message()
+async def debug(msg: Message):
+    print(msg.from_user.id)
+
 async def set_commands(bot: Bot):
     commands = [
         BotCommand(command="start", description="Перезапустить бота"),
@@ -264,6 +268,7 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
 
 
 
