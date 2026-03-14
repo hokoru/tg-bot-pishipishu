@@ -22,7 +22,7 @@ photo8 = FSInputFile("img/8.jpg")
 import os
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 MANAGER_USERNAME = "@DimentiySobolev"
-MANAGER_ID = 785215907
+MANAGER_ID = 8634308749
 
 TARIFFS = {
     "rewrite": 80,
@@ -45,9 +45,6 @@ bot = Bot(BOT_TOKEN)
 dp = Dispatcher(storage=MemoryStorage())
 
 # ================= КНОПКИ =================
-@dp.message()
-async def debug(msg: Message):
-    print(msg.from_user.id)
 
 async def set_commands(bot: Bot):
     commands = [
