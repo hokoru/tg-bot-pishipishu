@@ -21,7 +21,7 @@ photo8 = FSInputFile("img/8.jpg")
 # ================= НАСТРОЙКИ =================
 import os
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-MANAGER_USERNAME = "@DimentiySobolev"
+MANAGER_USERNAME = "@theadminpanel"
 MANAGER_ID = 8634308749
 
 TARIFFS = {
